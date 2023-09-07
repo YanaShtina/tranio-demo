@@ -360,18 +360,20 @@ var enableBodyScroll = bodyScrollLock.enableBodyScroll;
 /* harmony default export */ var scrollTo = ({
   scroll: function scroll() {
     var links = document.querySelectorAll('.js-scroll');
-    var targetElement = document.querySelector('.nav');
+    var targetElement = document.querySelector('.header__bottom');
     links.forEach(function (link) {
       link.addEventListener('click', function (e) {
         e.preventDefault();
         var target = this.dataset.target;
         var scrollTarget = document.querySelector(".".concat(target));
         var burger = document.querySelector('.burger');
-        var nav = document.querySelector('.nav');
+        var nav = document.querySelector('.header__bottom');
+        var navList = document.querySelector('.header__nav-list');
         var body = document.querySelector('body');
         var topOffset;
         burger.classList.remove('active');
         nav.classList.remove('active');
+        navList.classList.remove('active');
         body.classList.remove('active');
         enableBodyScroll(targetElement);
         topOffset = 50;
@@ -416,7 +418,7 @@ var popup_enableBodyScroll = popup_bodyScrollLock.enableBodyScroll;
         if (title) {
           popupTitle.textContent = "\u041F\u043E\u043B\u0443\u0447\u0438\u0442\u0435 \u043F\u043E\u0434\u0431\u043E\u0440\u043A\u0443 ".concat(title);
         }
-        if (type !== 'policy') {
+        if (type !== 'polisy') {
           disableBodyScroll(targetElement);
         }
         var closePopupButton = popupBg.querySelector('.close-popup');
@@ -435,6 +437,17 @@ var popup_enableBodyScroll = popup_bodyScrollLock.enableBodyScroll;
         });
       });
     });
+    var isMouseOutOfViewport = false;
+    function checkMousePosition(event) {
+      var mouseY = event.clientY;
+      if (mouseY < 3) {
+        isMouseOutOfViewport = true;
+        document.querySelector('.open-popup._leave').click();
+      } else {
+        isMouseOutOfViewport = false;
+      }
+    }
+    document.addEventListener("mousemove", checkMousePosition);
   }
 });
 ;// CONCATENATED MODULE: ./node_modules/imask/esm/_rollupPluginBabelHelpers-6b3bd404.js
@@ -4029,7 +4042,229 @@ try {
     });
   }
 });
+;// CONCATENATED MODULE: ./src/modules/slider.js
+/* harmony default export */ var slider = ({
+  init: function init() {
+    var row = document.querySelectorAll('.project__slider-small .slider-wrapper');
+    var slides = document.querySelectorAll('.project__slider-small .project__slider-slide');
+    var next = document.querySelectorAll('.swiper-button-next');
+    var prev = document.querySelectorAll('.swiper-button-prev');
+    var test = function test() {
+      row.forEach(function (r) {
+        var wrapper = r.closest('.slider-wrapper');
+        var lastChild = r.lastElementChild;
+        var isActive = r.lastElementChild.classList.contains('swiper-slide-thumb-active');
+        if (isActive === true) {
+          r.classList.add('move');
+        } else {
+          r.classList.remove('move');
+        }
+      });
+    };
+    slides.forEach(function (s) {
+      s.addEventListener('click', function () {
+        test();
+      });
+    });
+    next.forEach(function (n) {
+      n.addEventListener('click', function () {
+        test();
+      });
+    });
+    prev.forEach(function (p) {
+      p.addEventListener('click', function () {
+        test();
+      });
+    });
+  }
+});
+;// CONCATENATED MODULE: ./src/modules/quiz.js
+/* harmony default export */ var quiz = ({
+  init: function init() {
+    /*     function clearQuizData() {
+          for (let i = 1; i <= totalQuestions; i++) {
+            const questionKey = `question${i}`;
+            localStorage.removeItem(questionKey);
+          }
+        }
+    
+        clearQuizData(); */
+
+    var currentQuestionIndex = 0;
+    var totalQuestions = 5;
+    var answers = [];
+
+    // Функция для сохранения ответов в localStorage
+    function saveAnswer(questionNumber, answer) {
+      // Проверяем тип input (radio или checkbox)
+      var inputType = document.querySelector(".quiz-inner._".concat(questionNumber, " input[type=\"radio\"]")) ? "radio" : "checkbox";
+
+      // Получаем сохраненные ответы для данного вопроса из localStorage
+      var savedAnswers = JSON.parse(localStorage.getItem("quizAnswers")) || {};
+      if (inputType === "checkbox") {
+        // Если это checkbox, проверяем, есть ли уже ответы для данного вопроса
+        if (savedAnswers["question".concat(questionNumber)]) {
+          // Если есть сохраненные ответы, добавляем текущий ответ в массив
+          // Находим все выбранные ответы в данном вопросе
+          var selectedCheckboxes = document.querySelectorAll(".quiz-inner._".concat(questionNumber, " input[type=\"checkbox\"]:checked"));
+
+          // Извлекаем значения выбранных ответов и сохраняем их в массив
+          var selectedValues = Array.from(selectedCheckboxes).map(function (checkbox) {
+            return checkbox.value;
+          });
+
+          // Получаем сохраненные ответы для данного вопроса из localStorage
+          var _savedAnswers = JSON.parse(localStorage.getItem("quizAnswers")) || {};
+
+          // Сохраняем выбранные значения ответов в localStorage
+          _savedAnswers["question".concat(questionNumber)] = selectedValues;
+
+          // Обновляем localStorage
+          localStorage.setItem("quizAnswers", JSON.stringify(_savedAnswers));
+
+          // Если ответов для данного вопроса еще нет, создаем новый массив
+
+          _savedAnswers["question".concat(questionNumber)] = [answer];
+        }
+      } else {
+        // Если это radio, просто сохраняем ответ как строку
+        savedAnswers["question".concat(questionNumber)] = answer;
+      }
+
+      // Обновляем localStorage
+      localStorage.setItem("quizAnswers", JSON.stringify(savedAnswers));
+    }
+
+    // Функция для отображения текущего вопроса
+    function showCurrentQuestion() {
+      var quizInner = document.querySelector(".quiz-inner._".concat(currentQuestionIndex + 1));
+      if (quizInner) {
+        // Скрываем все вопросы
+        var _allQuizInner = document.querySelectorAll(".quiz-inner");
+        _allQuizInner.forEach(function (inner) {
+          inner.style.display = "none";
+        });
+
+        // Показываем текущий вопрос
+        quizInner.style.display = "flex";
+      }
+    }
+
+    // Функция для инициализации определенного вопроса
+    function initializeQuestion(questionNumber) {
+      var question = document.querySelector(".quiz-inner._step._".concat(questionNumber));
+      if (question) {
+        var nextButton = question.querySelector(".quiz__btn._next");
+        var prevButton = question.querySelector(".quiz__btn._prev");
+
+        // Обработчик клика на кнопку "следующий вопрос"
+        nextButton.addEventListener("click", function () {
+          // Получаем выбранный ответ
+          var selectedAnswer = question.querySelector("input:checked");
+          if (selectedAnswer) {
+            var answerValue = selectedAnswer.value;
+            saveAnswer(currentQuestionIndex + 1, answerValue);
+            if (currentQuestionIndex < totalQuestions - 1) {
+              currentQuestionIndex++;
+              showCurrentQuestion();
+            } else {
+              var quizInner = document.querySelector(".quiz-inner._final");
+              var quizInnerPrev = document.querySelector(".quiz-inner._step._5");
+              quizInner.style.display = "flex";
+              quizInnerPrev.style.display = "none";
+            }
+
+            // Делаем кнопку "вернуться" активной, если это не первый вопрос
+            if (currentQuestionIndex > 0) {
+              prevButton.classList.remove("_disabled");
+            }
+          }
+        });
+        prevButton.addEventListener("click", function () {
+          if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            showCurrentQuestion();
+          }
+          if (currentQuestionIndex < totalQuestions - 1) {
+            nextButton.classList.remove("_disabled");
+          }
+          с;
+          if (currentQuestionIndex === 0) {
+            prevButton.classList.add("_disabled");
+          }
+        });
+      }
+    }
+
+    // Проверяем, есть ли сохраненные ответы в localStorage
+    var savedAnswers = localStorage.getItem("quizAnswers");
+    if (savedAnswers) {
+      answers = JSON.parse(savedAnswers);
+    }
+
+    // Первоначально скрываем все вопросы
+    var allQuizInner = document.querySelectorAll(".quiz-inner");
+    allQuizInner.forEach(function (inner) {
+      inner.style.display = "none";
+    });
+
+    // Переход к первому вопросу
+    showCurrentQuestion();
+
+    // Инициализация всех вопросов
+    for (var i = 1; i <= totalQuestions; i++) {
+      initializeQuestion(i);
+    }
+  }
+});
+;// CONCATENATED MODULE: ./src/modules/date.js
+/* harmony default export */ var date = ({
+  init: function init() {
+    var currentDate = new Date();
+    var yesterday = new Date(currentDate);
+    yesterday.setDate(currentDate.getDate() - 1);
+    var day = yesterday.getDate();
+    var month = yesterday.getMonth() + 1;
+    var year = yesterday.getFullYear();
+    var formattedDay = day < 10 ? "0".concat(day) : day;
+    var formattedMonth = month < 10 ? "0".concat(month) : month;
+    var formattedDate = "".concat(formattedDay, ".").concat(formattedMonth, ".").concat(year);
+    var spanElement = document.querySelector('.present__date span');
+    if (spanElement) {
+      spanElement.textContent = formattedDate;
+    }
+  }
+});
+;// CONCATENATED MODULE: ./src/modules/burger.js
+var burger_bodyScrollLock = __webpack_require__(509);
+var burger_disableBodyScroll = burger_bodyScrollLock.disableBodyScroll;
+var burger_enableBodyScroll = burger_bodyScrollLock.enableBodyScroll;
+/* harmony default export */ var burger = ({
+  init: function init() {
+    var burger = document.querySelector('.burger');
+    /*     const body = document.querySelector('body'); */
+    var nav = document.querySelector('.header__bottom');
+    var targetElement = document.querySelector('.header__bottom');
+    var navList = document.querySelector('.header__nav-list');
+    burger.addEventListener('click', function () {
+      if (burger.classList.contains('active')) {
+        burger.classList.remove('active');
+        /*      body.classList.remove('active'); */
+        burger_enableBodyScroll(targetElement);
+      } else {
+        burger.classList.add('active');
+        /*       body.classList.add('active'); */
+        burger_disableBodyScroll(targetElement);
+      }
+      nav.classList.toggle('active');
+      navList.classList.toggle('active');
+    });
+  }
+});
 ;// CONCATENATED MODULE: ./src/index.js
+
+
+
 
 
 
@@ -4038,7 +4273,10 @@ try {
 scrollTo.scroll();
 popup.init();
 mask.init();
-// slider.init();
+quiz.init();
+date.init();
+burger.init();
+slider.init();
 }();
 /******/ })()
 ;
