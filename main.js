@@ -13248,11 +13248,7 @@ try {
       var inputType = document.querySelector(".quiz-inner._".concat(questionNumber, " input[type=\"radio\"]")) ? "radio" : "checkbox";
       var savedAnswers = JSON.parse(localStorage.getItem("quizAnswers")) || {};
       if (inputType === "checkbox") {
-        if (savedAnswers["question".concat(questionNumber)]) {
-          savedAnswers["question".concat(questionNumber)].push(answer);
-        } else {
-          savedAnswers["question".concat(questionNumber)] = [answer];
-        }
+        savedAnswers["question".concat(questionNumber)] = answer;
       } else {
         savedAnswers["question".concat(questionNumber)] = answer;
       }
