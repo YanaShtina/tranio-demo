@@ -13239,57 +13239,23 @@ try {
 ;// CONCATENATED MODULE: ./src/modules/quiz.js
 /* harmony default export */ var quiz = ({
   init: function init() {
-    /*     function clearQuizData() {
-          for (let i = 1; i <= totalQuestions; i++) {
-            const questionKey = `question${i}`;
-            localStorage.removeItem(questionKey);
-          }
-        }
-    
-        clearQuizData(); */
-
     var currentQuestionIndex = 0;
     var totalQuestions = 5;
-    var answers = [];
+    var answers = {};
 
     // Функция для сохранения ответов в localStorage
     function saveAnswer(questionNumber, answer) {
-      // Проверяем тип input (radio или checkbox)
       var inputType = document.querySelector(".quiz-inner._".concat(questionNumber, " input[type=\"radio\"]")) ? "radio" : "checkbox";
-
-      // Получаем сохраненные ответы для данного вопроса из localStorage
       var savedAnswers = JSON.parse(localStorage.getItem("quizAnswers")) || {};
       if (inputType === "checkbox") {
-        // Если это checkbox, проверяем, есть ли уже ответы для данного вопроса
         if (savedAnswers["question".concat(questionNumber)]) {
-          // Если есть сохраненные ответы, добавляем текущий ответ в массив
-          // Находим все выбранные ответы в данном вопросе
-          var selectedCheckboxes = document.querySelectorAll(".quiz-inner._".concat(questionNumber, " input[type=\"checkbox\"]:checked"));
-
-          // Извлекаем значения выбранных ответов и сохраняем их в массив
-          var selectedValues = Array.from(selectedCheckboxes).map(function (checkbox) {
-            return checkbox.value;
-          });
-
-          // Получаем сохраненные ответы для данного вопроса из localStorage
-          var _savedAnswers = JSON.parse(localStorage.getItem("quizAnswers")) || {};
-
-          // Сохраняем выбранные значения ответов в localStorage
-          _savedAnswers["question".concat(questionNumber)] = selectedValues;
-
-          // Обновляем localStorage
-          localStorage.setItem("quizAnswers", JSON.stringify(_savedAnswers));
-
-          // Если ответов для данного вопроса еще нет, создаем новый массив
-
-          _savedAnswers["question".concat(questionNumber)] = [answer];
+          savedAnswers["question".concat(questionNumber)].push(answer);
+        } else {
+          savedAnswers["question".concat(questionNumber)] = [answer];
         }
       } else {
-        // Если это radio, просто сохраняем ответ как строку
         savedAnswers["question".concat(questionNumber)] = answer;
       }
-
-      // Обновляем localStorage
       localStorage.setItem("quizAnswers", JSON.stringify(savedAnswers));
     }
 
@@ -13297,13 +13263,10 @@ try {
     function showCurrentQuestion() {
       var quizInner = document.querySelector(".quiz-inner._".concat(currentQuestionIndex + 1));
       if (quizInner) {
-        // Скрываем все вопросы
         var _allQuizInner = document.querySelectorAll(".quiz-inner");
         _allQuizInner.forEach(function (inner) {
           inner.style.display = "none";
         });
-
-        // Показываем текущий вопрос
         quizInner.style.display = "flex";
       }
     }
@@ -13314,13 +13277,15 @@ try {
       if (question) {
         var nextButton = question.querySelector(".quiz__btn._next");
         var prevButton = question.querySelector(".quiz__btn._prev");
-
-        // Обработчик клика на кнопку "следующий вопрос"
         nextButton.addEventListener("click", function () {
-          // Получаем выбранный ответ
-          var selectedAnswer = question.querySelector("input:checked");
-          if (selectedAnswer) {
-            var answerValue = selectedAnswer.value;
+          var selectedAnswer = question.querySelectorAll("input:checked");
+          var answerValue;
+          if (selectedAnswer.length > 0) {
+            answerValue = Array.from(selectedAnswer).map(function (checkbox) {
+              return checkbox.value;
+            });
+          }
+          if (answerValue) {
             saveAnswer(currentQuestionIndex + 1, answerValue);
             if (currentQuestionIndex < totalQuestions - 1) {
               currentQuestionIndex++;
@@ -13333,8 +13298,6 @@ try {
               var quizInnerWrap = document.querySelector(".quiz__container").offsetTop;
               window.scrollTo(0, quizInnerWrap - 55);
             }
-
-            // Делаем кнопку "вернуться" активной, если это не первый вопрос
             if (currentQuestionIndex > 0) {
               prevButton.classList.remove("_disabled");
             }
@@ -13354,23 +13317,15 @@ try {
         });
       }
     }
-
-    // Проверяем, есть ли сохраненные ответы в localStorage
     var savedAnswers = localStorage.getItem("quizAnswers");
     if (savedAnswers) {
       answers = JSON.parse(savedAnswers);
     }
-
-    // Первоначально скрываем все вопросы
     var allQuizInner = document.querySelectorAll(".quiz-inner");
     allQuizInner.forEach(function (inner) {
       inner.style.display = "none";
     });
-
-    // Переход к первому вопросу
     showCurrentQuestion();
-
-    // Инициализация всех вопросов
     for (var i = 1; i <= totalQuestions; i++) {
       initializeQuestion(i);
     }
