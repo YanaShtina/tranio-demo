@@ -388,13 +388,15 @@ var enableBodyScroll = bodyScrollLock.enableBodyScroll;
       });
     });
     window.addEventListener('scroll', function () {
-      var header = document.querySelector('.header');
-      var scrollY = window.scrollY;
-      var threshold = 50;
-      if (scrollY > threshold) {
-        header.classList.add('fixed');
-      } else {
-        header.classList.remove('fixed');
+      var header = document.querySelector('.fix-header');
+      if (header) {
+        var scrollY = window.scrollY;
+        var threshold = 50;
+        if (scrollY > threshold) {
+          header.classList.add('fixed');
+        } else {
+          header.classList.remove('fixed');
+        }
       }
     });
   }
