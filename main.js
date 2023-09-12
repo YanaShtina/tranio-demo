@@ -455,8 +455,7 @@ var popup_enableBodyScroll = popup_bodyScrollLock.enableBodyScroll;
         isMouseOutOfViewport = false;
       }
     }
-
-    // document.addEventListener("mousemove", checkMousePosition);
+    document.addEventListener("mousemove", checkMousePosition);
   }
 });
 ;// CONCATENATED MODULE: ./node_modules/imask/esm/_rollupPluginBabelHelpers-6b3bd404.js
